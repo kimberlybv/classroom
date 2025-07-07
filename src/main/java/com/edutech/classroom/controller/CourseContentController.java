@@ -6,6 +6,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import java.util.List;
 
 @RestController
@@ -22,8 +24,12 @@ public class CourseContentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CourseContentDTO> findById(@PathVariable Integer id) {
-        return ResponseEntity.ok(courseContentService.findById(id));
+    public ResponseEntity<EntityModel<CourseContentDTO>> findById(@PathVariable Integer id) {
+        CourseContentDTO dto = courseContentService.findById(id);
+        EntityModel<CourseContentDTO> resource = EntityModel.of(dto);
+        resource.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(CourseContentController.class).findById(id)).withSelfRel());
+        resource.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(CourseContentController.class).findAll()).withRel("all-contents"));
+        return ResponseEntity.ok(resource);
     }
 
     @PostMapping
