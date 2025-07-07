@@ -1,0 +1,735 @@
+classroom/
+├── mvnw
+├── mvnw.cmd
+├── pom.xml
+├── README.md
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/edutech/classroom/
+│   │   │       ├── client/
+│   │   │       ├── config/
+│   │   │       ├── controller/
+│   │   │       │   ├── CourseCategoryController.java
+│   │   │       │   └── CourseController.java
+│   │   │       ├── dto/
+│   │   │       │   ├── CourseCategoryDTO.java
+│   │   │       │   └── CourseDTO.java
+│   │   │       ├── entity/
+│   │   │       │   ├── CourseCategory.java
+│   │   │       │   └── Course.java
+│   │   │       ├── exception/
+│   │   │       ├── Repository/
+│   │   │       │   └── CourseCategoryRepository.java
+│   │   │       ├── service/
+│   │   │       │   ├── CourseCategoryService.java
+│   │   │       │   └── CourseService.java
+│   │   │       └── ProgramaPrincipalClassroomApplication.java
+│   │   └── resources/
+│   │       ├── application.properties
+│   │       └── data.sql
+│   └── test/
+│       └── java/
+│           └── com/edutech/classroom/
+│               ├── controller/
+│               │   └── CourseCategoryControllerTest.java
+│               ├── entity/
+│               │   └── CourseCategoryTest.java
+│               ├── service/
+│               │   └── CourseCategoryServiceTest.java
+│               └── ProgramaPrincipalClassroomApplicationTests.java
+├── target/
+│   ├── classes/
+│   ├── generated-sources/
+│   ├── generated-test-sources/
+│   ├── maven-status/
+│   ├── surefire-reports/
+│   └── test-classes/
+
+# Ejemplo de código relevante del microservicio classroom
+
+src/main/java/com/edutech/classroom/controller/CourseController.java
+package com.edutech.classroom.controller;
+
+import com.edutech.classroom.dto.CourseDTO;
+import com.edutech.classroom.service.CourseService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/courses")
+@RequiredArgsConstructor
+public class CourseController {
+    private final CourseService courseService;
+    @GetMapping
+    public ResponseEntity<List<CourseDTO>> findAll() {
+        return ResponseEntity.ok(courseService.findAll());
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<EntityModel<CourseDTO>> findById(@PathVariable Integer id) {
+        CourseDTO dto = courseService.findById(id);
+        EntityModel<CourseDTO> resource = EntityModel.of(dto);
+        resource.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(CourseController.class).findById(id)).withSelfRel());
+        resource.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(CourseController.class).findAll()).withRel("all-courses"));
+        return ResponseEntity.ok(resource);
+    }
+    @PostMapping
+    public ResponseEntity<CourseDTO> create(@RequestBody @Valid CourseDTO dto) {
+        return ResponseEntity.ok(courseService.create(dto));
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<CourseDTO> update(@PathVariable Integer id, @Valid @RequestBody CourseDTO dto) {
+        return ResponseEntity.ok(courseService.update(id, dto));
+    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+        courseService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+}
+
+src/main/java/com/edutech/classroom/controller/CourseCategoryController.java
+package com.edutech.classroom.controller;
+
+import com.edutech.classroom.dto.CourseCategoryDTO;
+import com.edutech.classroom.service.CourseCategoryService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/course-categories")
+@RequiredArgsConstructor
+public class CourseCategoryController {
+    private final CourseCategoryService courseCategoryService;
+    @GetMapping
+    public ResponseEntity<List<CourseCategoryDTO>> findAll(){
+        return ResponseEntity.ok(courseCategoryService.findAll());
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<EntityModel<CourseCategoryDTO>> findById(@PathVariable Integer id){
+        CourseCategoryDTO dto = courseCategoryService.findById(id);
+        EntityModel<CourseCategoryDTO> resource = EntityModel.of(dto);
+        resource.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(CourseCategoryController.class).findById(id)).withSelfRel());
+        resource.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(CourseCategoryController.class).findAll()).withRel("all-categories"));
+        return ResponseEntity.ok(resource);
+    }
+    @PostMapping
+    public ResponseEntity<CourseCategoryDTO> create(@RequestBody @Valid CourseCategoryDTO dto) {
+        return ResponseEntity.ok(courseCategoryService.create(dto));
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<CourseCategoryDTO> update(@PathVariable Integer id, @Valid @RequestBody CourseCategoryDTO dto){
+        return ResponseEntity.ok(courseCategoryService.update(id, dto));
+    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Integer id){
+        courseCategoryService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+}
+
+src/main/java/com/edutech/classroom/dto/CourseDTO.java
+package com.edutech.classroom.dto;
+
+import com.edutech.classroom.entity.Course;
+import com.edutech.classroom.entity.CourseCategory;
+import com.edutech.classroom.entity.User;
+import lombok.Data;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+@Data
+public class CourseDTO {
+    private Integer id;
+    private String title;
+    private String description;
+    private Integer categoryId;
+    private Integer managerId;
+    private Integer instructorId;
+    private LocalDate publishDate;
+    private BigDecimal price;
+    private String image;
+    private String status;
+    public static CourseDTO fromEntity(Course entity) {
+        CourseDTO dto = new CourseDTO();
+        dto.setId(entity.getId());
+        dto.setTitle(entity.getTitle());
+        dto.setDescription(entity.getDescription());
+        dto.setCategoryId(entity.getCategory().getId());
+        dto.setManagerId(entity.getManager().getId());
+        dto.setInstructorId(entity.getInstructor().getId());
+        dto.setPublishDate(entity.getPublishDate());
+        dto.setPrice(entity.getPrice());
+        dto.setImage(entity.getImage());
+        dto.setStatus(entity.getStatus());
+        return dto;
+    }
+    public static Course toEntity(CourseDTO dto, CourseCategory courseCategory, User manager, User instructor) {
+        Course entity = new Course();
+        entity.setId(dto.getId());
+        entity.setTitle(dto.getTitle());
+        entity.setDescription(dto.getDescription());
+        entity.setCategory(courseCategory);
+        entity.setManager(manager);
+        entity.setInstructor(instructor);
+        entity.setPublishDate(dto.getPublishDate());
+        entity.setPrice(dto.getPrice());
+        entity.setImage(dto.getImage());
+        entity.setStatus(dto.getStatus());
+        return entity;
+    }
+}
+
+src/main/java/com/edutech/classroom/dto/CourseCategoryDTO.java
+package com.edutech.classroom.dto;
+
+import com.edutech.classroom.entity.CourseCategory;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
+@Data
+public class CourseCategoryDTO {
+    private Integer id;
+    @NotNull(message = "El nombre de la categoría no puede estar vacío")
+    @Size(max = 100, message = "El nombre de la categoría no puede superar los 100 caracteres")
+    private String name;
+    @NotNull(message = "La descripcíon de la categoría no puede estar vacía")
+    @Size(max = 800, message = "La descripcion de la categoría no puede superar los 800 caracteres")
+    private String description;
+    public static CourseCategoryDTO fromEntity(CourseCategory entity){
+        CourseCategoryDTO dto = new CourseCategoryDTO();
+        dto.setId(entity.getId());
+        dto.setName(entity.getName());
+        dto.setDescription(entity.getDescription());
+        return dto;
+    }
+    public  CourseCategory toEntity(){
+        CourseCategory entity = new CourseCategory();
+        entity.setId(this.getId());
+        entity.setName(this.getName());
+        entity.setDescription(this.getDescription());
+        return entity;
+    }
+}
+
+src/main/java/com/edutech/classroom/entity/Course.java
+package com.edutech.classroom.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "course")
+public class Course {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
+    @Size(max = 200)
+    @NotNull
+    @Column(name = "title", nullable = false, length = 200)
+    private String title;
+    @Size(max = 800)
+    @NotNull
+    @Column(name = "description", nullable = false, length = 800)
+    private String description;
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "category_id", nullable = false)
+    private CourseCategory category;
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "manager_id", nullable = false)
+    private User manager;
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "instructor_id", nullable = false)
+    private User instructor;
+    @NotNull
+    @Column(name = "publish_date", nullable = false)
+    private LocalDate publishDate;
+    @NotNull
+    @Column(name = "price", nullable = false, precision = 15, scale = 3)
+    private BigDecimal price;
+    @Size(max = 255)
+    @NotNull
+    @Column(name = "image", nullable = false)
+    private String image;
+    @Size(max = 50)
+    @NotNull
+    @Column(name = "status", nullable = false)
+    private String status;
+}
+
+src/main/java/com/edutech/classroom/entity/CourseCategory.java
+package com.edutech.classroom.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "course_category")
+public class CourseCategory {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
+    @Size(max = 100)
+    @NotNull
+    @Column(name = "name", nullable = false, length = 100)
+    private String name;
+    @Size(max = 800)
+    @NotNull
+    @Column(name = "description", nullable = false, length = 800)
+    private String description;
+}
+
+src/main/java/com/edutech/classroom/service/CourseService.java
+package com.edutech.classroom.service;
+
+import com.edutech.classroom.Repository.CourseCategoryRepository;
+import com.edutech.classroom.Repository.CourseRepository;
+import com.edutech.classroom.Repository.UserRepository;
+import com.edutech.classroom.dto.CourseDTO;
+import com.edutech.classroom.entity.Course;
+import com.edutech.classroom.entity.CourseCategory;
+import com.edutech.classroom.entity.User;
+import com.edutech.classroom.exception.ResourceNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class CourseService {
+    private final CourseRepository courseRepository;
+    private final UserRepository userRepository;
+    private final CourseCategoryRepository repo;
+    public List<CourseDTO> findAll(){
+        return courseRepository.findAll().stream().map(CourseDTO::fromEntity).toList();
+    }
+    public CourseDTO findById(Integer id){
+        return CourseDTO.fromEntity(courseRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada")));
+    }
+    public CourseDTO create(CourseDTO dto) {
+        CourseCategory category = repo.findById(dto.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));
+        User manager = userRepository.findById(dto.getManagerId())
+                .orElseThrow(() -> new ResourceNotFoundException("Manager no encontrado"));
+        User instructor = userRepository.findById(dto.getInstructorId())
+                .orElseThrow(() -> new ResourceNotFoundException("Instructor no encontrado"));
+        Course entity = CourseDTO.toEntity(dto, category, manager, instructor);
+        Course saved = courseRepository.save(entity);
+        return CourseDTO.fromEntity(saved);
+    }
+    public CourseDTO update(Integer id, CourseDTO dto) {
+        courseRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Curso no encontrado"));
+        CourseCategory category = repo.findById(dto.getCategoryId()).orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));
+        User manager = userRepository.findById(dto.getManagerId()).orElseThrow(() -> new ResourceNotFoundException("Manager no encontrado"));
+        User instructor = userRepository.findById(dto.getInstructorId()).orElseThrow(() -> new ResourceNotFoundException("Instructor no encontrado"));
+        Course entity = CourseDTO.toEntity(dto, category, manager, instructor);
+        entity.setId(id);
+        Course updated = courseRepository.save(entity);
+        return CourseDTO.fromEntity(updated);
+    }
+    public void delete(Integer id) {
+        courseRepository.delete(courseRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Curso no encontrado")));
+    }
+}
+
+src/main/java/com/edutech/classroom/service/CourseCategoryService.java
+package com.edutech.classroom.service;
+
+import com.edutech.classroom.Repository.CourseCategoryRepository;
+import com.edutech.classroom.dto.CourseCategoryDTO;
+import com.edutech.classroom.entity.CourseCategory;
+import com.edutech.classroom.exception.ResourceNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class CourseCategoryService {
+    private final CourseCategoryRepository repo;
+    public List<CourseCategoryDTO> findAll(){
+        return repo.findAll().stream().map(CourseCategoryDTO::fromEntity).toList();
+    }
+    public CourseCategoryDTO findById(Integer id){
+        return CourseCategoryDTO.fromEntity(repo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada")));
+    }
+    public CourseCategoryDTO create(CourseCategoryDTO dto) {
+        return CourseCategoryDTO.fromEntity(repo.save(dto.toEntity()));
+    }
+    public CourseCategoryDTO update(Integer id, CourseCategoryDTO dto) {
+        repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));
+        CourseCategory entity = dto.toEntity();
+        entity.setId(id);
+        return CourseCategoryDTO.fromEntity(repo.save(entity));
+    }
+    public void delete(Integer id) {
+        repo.delete(repo.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Categoría no encontrada")));
+    }
+}
+
+src/main/java/com/edutech/classroom/Repository/CourseCategoryRepository.java
+package com.edutech.classroom.Repository;
+
+import com.edutech.classroom.entity.CourseCategory;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface CourseCategoryRepository extends JpaRepository<CourseCategory, Integer> {
+}
+
+src/main/java/com/edutech/classroom/ProgramaPrincipalClassroomApplication.java
+package com.edutech.classroom;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class ProgramaPrincipalClassroomApplication {
+	public static void main(String[] args) {
+		SpringApplication.run(ProgramaPrincipalClassroomApplication.class, args);
+	}
+}
+
+src/main/resources/application.properties
+spring.application.name=Programa principal classroom
+spring.datasource.url=jdbc:h2:mem:edutech;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+spring.datasource.driver-class-name=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
+
+src/main/resources/data.sql
+-- TABLAS
+CREATE TABLE IF NOT EXISTS role (
+    id INT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    description VARCHAR(800) NOT NULL
+);
+CREATE TABLE IF NOT EXISTS "user" (
+    id INT PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role_id INT NOT NULL,
+    is_active BOOLEAN NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    CONSTRAINT fk_user_role FOREIGN KEY (role_id) REFERENCES role(id)
+);
+CREATE TABLE IF NOT EXISTS course_category (
+    id INT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description VARCHAR(800) NOT NULL
+);
+CREATE TABLE IF NOT EXISTS course (
+    id INT PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    description VARCHAR(800) NOT NULL,
+    category_id INT NOT NULL,
+    manager_id INT NOT NULL,
+    instructor_id INT NOT NULL,
+    publish_date DATE NOT NULL,
+    price DECIMAL(15,3) NOT NULL,
+    image VARCHAR(255) NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    CONSTRAINT fk_course_category FOREIGN KEY (category_id) REFERENCES course_category(id),
+    CONSTRAINT fk_course_manager FOREIGN KEY (manager_id) REFERENCES "user"(id),
+    CONSTRAINT fk_course_instructor FOREIGN KEY (instructor_id) REFERENCES "user"(id)
+);
+CREATE TABLE IF NOT EXISTS enrollments (
+    id INT PRIMARY KEY,
+    course_id INT NOT NULL,
+    user_id INT NOT NULL,
+    enrollment_date TIMESTAMP NOT NULL,
+    CONSTRAINT fk_enrollment_course FOREIGN KEY (course_id) REFERENCES course(id),
+    CONSTRAINT fk_enrollment_user FOREIGN KEY (user_id) REFERENCES "user"(id)
+);
+CREATE TABLE IF NOT EXISTS course_content (
+    id INT PRIMARY KEY,
+    course_id INT NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    content_type VARCHAR(50) NOT NULL,
+    url VARCHAR(800) NOT NULL,
+    order_index INT NOT NULL,
+    CONSTRAINT fk_content_course FOREIGN KEY (course_id) REFERENCES course(id)
+);
+
+src/test/java/com/edutech/classroom/controller/CourseCategoryControllerTest.java
+package com.edutech.classroom.controller;
+
+import com.edutech.classroom.dto.CourseCategoryDTO;
+import com.edutech.classroom.service.CourseCategoryService;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import java.util.Collections;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(CourseCategoryController.class)
+class CourseCategoryControllerTest {
+    @Autowired
+    private MockMvc mockMvc;
+    @MockBean
+    private CourseCategoryService courseCategoryService;
+    @Test
+    void testFindAllReturnsOk() throws Exception {
+        when(courseCategoryService.findAll()).thenReturn(Collections.emptyList());
+        mockMvc.perform(get("/api/course-categories"))
+                .andExpect(status().isOk());
+    }
+    @Test
+    void testFindByIdReturnsOk() throws Exception {
+        CourseCategoryDTO dto = new CourseCategoryDTO();
+        dto.setId(1);
+        dto.setName("Programming");
+        dto.setDescription("Programming courses");
+        when(courseCategoryService.findById(1)).thenReturn(dto);
+        mockMvc.perform(get("/api/course-categories/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Programming"));
+    }
+}
+
+src/test/java/com/edutech/classroom/entity/CourseCategoryTest.java
+package com.edutech.classroom.entity;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+class CourseCategoryTest {
+    @Test
+    void testSettersAndGetters() {
+        CourseCategory category = new CourseCategory();
+        category.setName("Programming");
+        category.setDescription("Programming courses");
+        assertEquals("Programming", category.getName());
+        assertEquals("Programming courses", category.getDescription());
+    }
+}
+
+src/test/java/com/edutech/classroom/service/CourseCategoryServiceTest.java
+package com.edutech.classroom.service;
+
+import com.edutech.classroom.Repository.CourseCategoryRepository;
+import com.edutech.classroom.dto.CourseCategoryDTO;
+import com.edutech.classroom.entity.CourseCategory;
+import com.edutech.classroom.exception.ResourceNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class CourseCategoryServiceTest {
+    @Mock
+    private CourseCategoryRepository courseCategoryRepository;
+    @InjectMocks
+    private CourseCategoryService courseCategoryService;
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+    @Test
+    void testFindByIdThrowsExceptionIfNotFound() {
+        when(courseCategoryRepository.findById(1)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> courseCategoryService.findById(1));
+    }
+    @Test
+    void testCreateCategory() {
+        CourseCategoryDTO dto = new CourseCategoryDTO();
+        dto.setName("Programming");
+        dto.setDescription("Programming courses");
+        CourseCategory category = new CourseCategory();
+        category.setName(dto.getName());
+        category.setDescription(dto.getDescription());
+        when(courseCategoryRepository.save(any(CourseCategory.class))).thenReturn(category);
+        CourseCategoryDTO result = courseCategoryService.create(dto);
+        assertEquals(dto.getName(), result.getName());
+        assertEquals(dto.getDescription(), result.getDescription());
+    }
+}
+
+src/test/java/com/edutech/classroom/ProgramaPrincipalClassroomApplicationTests.java
+package com.edutech.classroom;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class ProgramaPrincipalClassroomApplicationTests {
+    @Test
+    void contextLoads() {
+    }
+}
+
+pom.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.4.5</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.edutech.classroom</groupId>
+	<artifactId>edutech-classroom</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>Programa principal classroom</name>
+	<description>Demo project for Spring Boot</description>
+	<url/>
+	<licenses>
+		<license/>
+	</licenses>
+	<developers>
+		<developer/>
+	</developers>
+	<scm>
+		<connection/>
+		<developerConnection/>
+		<tag/>
+		<url/>
+	</scm>
+	<properties>
+		<java.version>21</java.version>
+		<spring-cloud.version>2024.0.1</spring-cloud.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-hateoas</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>5.2.0</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
